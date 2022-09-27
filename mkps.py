@@ -4,8 +4,8 @@
 # [description]
 #    mkps - makes python scripts with all the seasoning on top.
 #           saves time for writing commments and ifmain/main.
-#			will check for duplicates in arguments as well as 
-#			duplicate existing files. Time complexity minimized.
+#	    will check for duplicates in arguments as well as 
+#	    duplicate existing files. Time complexity minimized.
 #
 # --To do--
 # - extended to macos and windows
@@ -167,7 +167,7 @@ def main():
 	# removing all extensions helps identify real duplicates
 	# prevents events like mkps filename filename.py
 	filenames       = remove_extensions(args)
-	dargs 			= check_dupes(filenames)
+	dargs 		= check_dupes(filenames)
 
 	print("checking pre-existing files")
 	# add the entensions back and check the current directory for the same files
