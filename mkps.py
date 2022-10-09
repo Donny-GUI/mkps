@@ -1,192 +1,238 @@
-# [author]:  Donald Guiles
-# [date]:    sept 27 2022
-# [license]: GNU3 / Freeware
-# [description]
-#    mkps - makes python scripts with all the seasoning on top.
-#           saves time for writing commments and ifmain/main.
-#	    will check for duplicates in arguments as well as 
-#	    duplicate existing files. Time complexity minimized.
-#
-# --To do--
-# - extended to macos and windows
-# - create install.py
-# - add python rich status
-
+from sys import argv
+from sh import date
 import os
-from sys import argv 
-from datetime import datetime
-
-def get_filepath(filename):
-	""" turns the filename into the filepath  """
-
-	curdir = os.getcwd()
-	file_path = f"{curdir}/{filename}"
-	return file_path
 
 
-def get_filepaths(file_list):
-	""" takes a list of filenames and returns filepaths """
 
-	return_list = []
-	for file in file_list:
-		fpath = get_filepath(file)
-		return_list.append(fpath)
-
-	return return_list
+# [author]: donald guiles
+# [date]:   oct. 8 2022
+# [description]:  mkps make python script --
+#                 for creating entire python3 scripts from the terminal cmdline
 
 
-def make_default_pyfile(filepath):
-	""" creates a standard function based python file with name filepath """
 
-	date_time_now = datetime.now()
-	username = os.getlogin()
-	curdir = str(os.getcwd()) + "/"
-	filename = filepath - curdir
-	default_py = [
-		f'#  [  filename ]:  {filename}',
-		f'#  [      date ]:  {date_time_now}',
-		f'#  [    author ]:  {username}',
-		'#  [    module ]:  n/a'
-		'#  [description]:  ',
-		'',
-		'import os', 
-		'',
-		'',
+class MKPS:
+
+	""" class version of mkps """
+
+
+	user = os.getlogin()
+	date = date()
+	description = ""
+	self.file = ""
+
+	staticFile = [
+		f'# [file]       : {self.file}',
+		f'# [description]: {self.description}',
+		f'# [author]     : {self.user}',
+		f"# [date]       : {self.date}"
+		'import os\n',
+		]
+	defmain = [
 		'def main():',
-		'	print("hi mom!")',
-		'',
+		'\tpass',
+		'\n'
+		]		
+
+	ifmain = [
 		"if __name__ == '__main__':",
-		'	main()',
-		''
-	]
+		"\tmain()"
+		]
 
-	os.system(f"touch {filepath}")
-	file = open(filepath, 'w')
-	for x in default_py:
-		line = x + "\n"
-		file.write(line)
-	file.close()
+		flags = ['-h', '-m', '-f', '-fi', '-ff']
 
 
-def show_help():
-	print("\n [ mkps ]    \n")
-	print("      make python script \n")
-	print("    [usage ]   \n")
-	print("          mkps <filename> <filename>... \n")
+	def __init__(self):
+
+		self.filename = None
+		self.values = None
+        self.flag_values['filename'] = []
+
+        for flag in self.flags:
+        	self.flag_values[f'{flag}'] = []
+        	
+        self.current_flag = self.flag_values['filename']
+        self.this_file = self.staticFile
+        self.adding_modules = []
 
 
-	
-def remove_extensions(arguments):
-	files = []
-	for x in arguments:
-		if ".py" in x:
-			y = x.split(".py")
-			z = "".join(y)
-			files.append(z)
-		else:
-			files.append(x)
-	return files
+    def parseArgs(self):
+
+    	""" Parse the system args """
+
+    	try:
+    		args = argv[1:]
+    	except:
+    		self.error("not filename given")
+    		self.helpMe()
 
 
-def add_extensions(file_list):
-	""" adds .py to all names """
+    	self.current_flag = self.flag_values['filename']
+    	
+    	for arg in args:
 
-	python_extended = []
-	for file in file_list:
-		if file.endswith(".py"):
-			python_extended.append(file)
-		else:
-			x = file + ".py"
-			python_extended.append(x)
-	return python_extended
+    		if arg in self.flags:
+    			self.current_flag = self.flag_values[f'{arg}']
+    		else:
+    			self.current_flag.append(arg)
+    	self.filename = self.flag_values['filename']
 
 
-def check_args():
-	""" checks to make sure there isnt one argument, returns argv[1:] """
+    def makeBlank(self):
 
-	args = argv
-	if int(len(args)) < 2:
-		show_help()
-		exit()
-	else:
-		return args[1:]
+    	""" make a blank python file with the given filename """
+
+    	os.system(f"touch {self.filename}")
 
 
-def make_scripts(file_list):
-	file_paths = file_list
-	for file_path in file_paths:
-		make_default_pyfile(file_path)
+    def checkFlagValues(self):
+
+    	""" check all the flag values collected and execute the methods necessary """
+
+    	for x in self.flags:
+    		if self.flag_values[f'{x}'] == None:
+    			continue
+    		else:
+    			match x:
+    				case '-h':
+    					self.helpMe()
+    				case '-f':
+    					self.addFunction(self.flag_values['-f'].values)
+    				case '-fi':
+    					self.fromImport(self.flag_values['-fi'].values)
+    				case '-ff':
+    					self.importFunctionFrom(self.flag_values['-ff'].values)
+    				case '-m':
+    					self.addModule(self.flag_values['-m'])
+    				case '-i':
+    					self.includeFile(self.flag_values['-i'])
+
+
+    def importFunctionFrom(self, function_values):
+    	
+    	""" import a function from another file """
+
+    	file = function_values[0]
+    	function_name = function_values[1]
+
+    	functions = []
+		__lines_slice = []
+
+		f = open(file, 'r')
+		lines = enumerate(f.readlines())
+		f.close()
 		
+		mylines = []
+		
+		for line in lines:
+			
+			if adding == True:
+				mylines.append(line)
 
-def scan_pyfiles(file_list):
-	""" checks the current directory for duplicates """
-	
-	return_list             = file_listst
-	py_files                = []
-	current_directory_files = os.listdir()
-	
-	for x in current_directory_files:
-		if x.endswith('.py'):
-			py_files.append(x)
-	
-	for py_file in py_files:
-		if py_file in file_list:
-			return_list.remove(pyfile)
-			print(pyfile," already exists!")
+			xfuncx = f'def {function_name}'
+			
+			if line.startswith(xfuncx):
+				mylines.append(line)
+				adding = True
+				continue
+			
+			elif line.startswith('def ')
+				adding = False 
+				break
 
-	return return_list
-
-
-def check_for_duplicates(args_list):
-	""" removes duplicate filenames. Time complexity minimized """
-	
-	if len(args_list) == '1':
-		return args_list
-
-	set_of_arguments = set()
-	list_of_arguments = args_list
-	for arg in args_list:
-		if arg in set_of_arguments:
-			print("duplicate detected in filename given")
-			list_of_arguments.remove(arg)
-			check_for_duplicates(list_of_arguments)
-		else:
-			set_of_arguments.add(arg)
-
-	return list_of_arguments
+		for x in mylines:
+			self.defmain.append(x)
 
 
-def main():
-	
-	print("checking args...")
-	# this part just makes sure that no arguments are given
-	# returns help if so.
-	args            = check_args()
-	
-	print("checking filenames")
-	# removing all extensions helps identify real duplicates
-	# prevents events like mkps filename filename.py
-	filenames       = remove_extensions(args)
-	dargs 		= check_dupes(filenames)
+    def addModule(self, module_values):
 
-	print("checking pre-existing files")
-	# add the entensions back and check the current directory for the same files
-	files           = add_extensions(filenames)
-	makefiles       = scan_pyfiles(files)
+    	""" add a module to the file """
 
-	print("making... ")
-	filepaths       = get_filepaths(makefiles)
-	scripts         = make_scripts(filepaths)
-	print("done.")
+    	for x in module_values:
+    		y = "import " + x
+    		self.adding_modules.append(y)
 
 
-if __name__ == '__main__':
-	main()
-	
+    def customFunction(self, custom_function_values):
+    	
+    	""" add a custom function to the file """
+
+    	x = custom_function_values[0]
+    	x.split()
+    	name = x[0]
+    	x.remove(x[0])
+    	codelines = x[-1]
+    	x.remove(x[-1])
+    	args = x 
+    	line1 = f"def {name}({[x for x in args]}):"
+    	line2 = codelines.split('\n')
+    	lines = [line1]
+    	for x in line2:
+    		lines.append(x)
+
+    	for line in lines:
+    		self.defmain.append(line)
 
 
-	
+    def showArgs(self):
+    	pprint(self.flag_values)
 
-	
-	
-	
+
+
+    def fixFilename(self):
+    	if self.filename == None:
+    		self.helpMe()
+    	if self.filename.endswith('.py'):
+    		self.filename = self.filename
+    	else:
+    		self.filename = self.filename + '.py'
+
+
+    def helpMe(self):
+    	help_page = [
+    		'[ mkps ]', 
+    		'     Make python script\n', 
+    		'  [ usage ]', 
+    		'    mkps <filename>', 
+    		'    mkps <filename> -f "new_function x" "print(x)"', 
+    		'    mkps <filename> -ff mom.py hello_world',
+    		'\n  [ flags ]',
+    		'     -f  --function        add a new function to the file',
+    		'     -ff --function-file   add a new function FROM a file',
+    		'     -fi --from-import     from <name> import <thing> flag',
+    		'     -m  --modules         add another module to he file',
+    		'     -h  --help            show this help page'
+    		]
+    	for x in help_page:
+    		print(x)
+    	exit()
+
+    def start(self):
+    	self.parseArgs()
+    	self.fixFilename()
+    	self.checkFlagValues()
+    	self.makeBlank()
+    	for x in self.adding_modules:
+    		self.this_file.append(x)
+    	for x in self.defmain:
+    		self.this_file.append(x)
+    	for x in self.ifmain:
+    		self.this_file.append(x)
+
+    	file = open(self.filename, 'w')
+    	for line in self.this_file:
+    		line = line + "\n"
+    		file.write(line)
+
+    	print('done')
+
+
+
+
+
+
+mkps = MKPS()
+mkps.start()
+
+
+
