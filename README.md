@@ -6,7 +6,7 @@ _[license]: freeware / GNU3_
 
 ## Description
 
-_makes python scripts with all the seasoning on top.
+_make entire python scrips from the command line. import from other files, write them as args.
       saves time for writing commments and ifmain/main.
 			will check for duplicates in arguments as well as 
 			duplicate existing files. Time complexity minimized._
