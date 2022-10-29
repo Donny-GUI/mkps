@@ -16,10 +16,13 @@ _make entire python3 scripts from the command line. import from other files, wri
 ```bash
 git clone https://github.com/Donny-GUI/mkps.git
 cd mkps
-python3 mkps.py
+python3 install.py
 
 ```
-
+## use
+```bash
+mkps <script name>
+```
 
 ## ToDo
 
